@@ -23,7 +23,23 @@ function Confirm-CookbookApk {
     if ($Badging -notmatch "(?m)^native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'$" ) { throw 'Expected a universal APK with all three supported ABIs.' }
     if ($Certificates -match '(?i)Android Debug|androiddebugkey') { throw 'Android Debug certificate is forbidden for public releases.' }
     $signers = [regex]::Matches($Certificates, '(?m)^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)\s*$')
-    if ($signers.Count -ne 1) { throw 'Expected exactly one verified APK signer.' }
+    $signerCountLine = $apksignerOutput |
+        Where-Object { $_ -match '^Number of signers:\s*(\d+)\s*$' } |
+        Select-Object -First 1
+
+    if (-not $signerCountLine) {
+        throw 'Unable to determine APK signer count.'
+    }
+
+    if ($signerCountLine -notmatch '^Number of signers:\s*(\d+)\s*$') {
+        throw 'Unable to parse APK signer count.'
+    }
+
+    $signerCount = [int]$Matches[1]
+
+    if ($signerCount -ne 1) {
+        throw "Expected exactly one verified APK signer, found $signerCount."
+    }
     $fingerprint = $signers[0].Groups[1].Value.ToLowerInvariant()
     if ($fingerprint -ne $expected) { throw 'APK signer does not match the independently recorded production fingerprint.' }
     return $fingerprint
