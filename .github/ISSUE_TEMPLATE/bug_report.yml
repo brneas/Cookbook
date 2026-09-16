@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible problem in Cookbook.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include passwords, app passwords, auth/poll tokens, Authorization headers, private recipe exports or unredacted server logs. Report vulnerabilities privately through Security → Report a vulnerability."
+  - type: input
+    id: app
+    attributes:
+      label: Cookbook app version
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+    validations:
+      required: true
+  - type: input
+    id: server
+    attributes:
+      label: Nextcloud and server Cookbook versions / API version
+      description: If relevant and known; do not include your private server URL.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Include expected and actual behavior using synthetic examples.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Sanitized error and relevant screenshots
+      description: Remove personal data and inspect technical details before sharing.

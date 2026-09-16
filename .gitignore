@@ -1,0 +1,53 @@
+# Generated Flutter and Android files
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+android/.gradle/
+android/.kotlin/
+android/.cxx/
+android/app/.cxx/
+android/app/debug/
+android/app/profile/
+android/app/release/
+**/local.properties
+**/GeneratedPluginRegistrant.java
+*.class
+app.*.symbols
+app.*.map.json
+
+# Local editors and operating systems
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+.DS_Store
+
+# Signing, secrets and private device data
+android/key.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+.env
+.env.*
+*.credentials.json
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.hprof
+*.dmp
+*.log
+
+# Build/release outputs, never source
+*.apk
+*.aab
+release/
+release-output/
+test/visual-output/

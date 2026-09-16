@@ -1,0 +1,6 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="48dp" android:height="48dp" android:viewportWidth="48" android:viewportHeight="48">
+    <path android:fillColor="#0082C9" android:pathData="M0,0h48v48h-48z" />
+    <!-- Original open recipe book geometry; no trademarked cloud mark. -->
+    <path android:fillColor="#FFFFFF" android:pathData="M8,12Q16,10 23,15L23,36Q16,31 8,33ZM25,15Q32,10 40,12L40,33Q32,31 25,36Z" />
+    <path android:strokeColor="#0082C9" android:strokeWidth="1.8" android:strokeLineCap="round" android:fillColor="@android:color/transparent" android:pathData="M12,18L19,20M12,23L19,25M29,20L36,18M29,25L36,23" />
+</vector>

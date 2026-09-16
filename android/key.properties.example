@@ -1,0 +1,6 @@
+# Copy to ignored android/key.properties and replace every placeholder locally.
+# Use forward slashes for storeFile; keep the keystore outside the repository.
+storeFile=REPLACE_WITH_LOCAL_KEYSTORE_LOCATION
+storePassword=REPLACE_LOCALLY
+keyAlias=REPLACE_LOCALLY
+keyPassword=REPLACE_LOCALLY
