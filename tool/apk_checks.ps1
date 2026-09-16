@@ -21,17 +21,72 @@ function Confirm-CookbookApk {
     $actual = @([regex]::Matches($Permissions, "(?m)^uses-permission: name='([^']+)'" ) | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
     if (@(Compare-Object ($required | Sort-Object) $actual).Count -ne 0) { throw 'Unexpected or missing Android permissions; review the release manifest.' }
     if ($Badging -notmatch "(?m)^native-code: 'arm64-v8a' 'armeabi-v7a' 'x86_64'$" ) { throw 'Expected a universal APK with all three supported ABIs.' }
-    if ($Certificates -match '(?i)Android Debug|androiddebugkey') { throw 'Android Debug certificate is forbidden for public releases.' }
-    $signers = [regex]::Matches(
-        $Certificates,
-        '(?m)^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)\s*$'
-    )
-
-    if ($signers.Count -ne 1) {
-        throw "Expected exactly one verified APK signer, found $($signers.Count)."
+    if ($Certificates -match '(?i)Android Debug|androiddebugkey') {
+        throw 'Android Debug certificate is forbidden for public releases.'
     }
 
-    $fingerprint = $signers[0].Groups[1].Value.ToLowerInvariant()
-    if ($fingerprint -ne $expected) { throw 'APK signer does not match the independently recorded production fingerprint.' }
+    # apksigner output differs between Android Build Tools versions.
+    # Newer versions may emit:
+    #   V2 Signer: certificate SHA-256 digest: ...
+    # Older/synthetic output may emit:
+    #   Signer #1 certificate SHA-256 digest: ...
+    $signerCountMatch = [regex]::Match(
+        $Certificates,
+        '(?im)^\s*Number of signers:\s*(?<count>\d+)\s*$'
+    )
+
+    $certificateMatches = [regex]::Matches(
+        $Certificates,
+        '(?im)^\s*(?:V\d+\s+Signer:|Signer\s+#\d+)\s+certificate\s+SHA-256\s+digest:\s*(?<digest>(?:[0-9a-f]{2}:?){32})\s*$'
+    )
+
+    if ($signerCountMatch.Success) {
+        $signerCount = [int]$signerCountMatch.Groups['count'].Value
+
+        if ($signerCount -ne 1) {
+            throw "Expected exactly one verified APK signer, found $signerCount."
+        }
+
+        if ($certificateMatches.Count -lt 1) {
+            throw 'Unable to read APK signing certificate SHA-256.'
+        }
+
+        # One signer can potentially be reported for more than one signature
+        # scheme. Every reported certificate must therefore resolve to the
+        # same certificate fingerprint.
+        $fingerprints = @(
+            $certificateMatches |
+                ForEach-Object {
+                    $_.Groups['digest'].Value.Replace(':', '').ToLowerInvariant()
+                } |
+                Sort-Object -Unique
+        )
+
+        if ($fingerprints.Count -ne 1) {
+            throw 'APK signature schemes report different signing certificates.'
+        }
+
+        $fingerprint = $fingerprints[0]
+    }
+    else {
+        # Compatibility path for synthetic/older apksigner output that does
+        # not contain an explicit "Number of signers" line. In this case,
+        # require exactly one certificate record so malformed test metadata
+        # cannot be collapsed into one signer.
+        if ($certificateMatches.Count -ne 1) {
+            throw "Expected exactly one verified APK signer, found $($certificateMatches.Count)."
+        }
+
+        $fingerprint = $certificateMatches[0].
+            Groups['digest'].
+            Value.
+            Replace(':', '').
+            ToLowerInvariant()
+    }
+
+    if ($fingerprint -ne $expected) {
+        throw 'APK signer does not match the independently recorded production fingerprint.'
+    }
+
     return $fingerprint
 }
